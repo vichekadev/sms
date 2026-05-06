@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SM System - RUPP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="./image/sms-logo.png" />
+
+    <style>
+        body { font-family: 'Open Sans', sans-serif; background-color: #f8fafc; color: #334155; }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        .nav-btn.active { background-color: #6366f1; color: white; border: 2px solid #4f46e5; }
+        
+        /* Fixed CSS from image_aec376.png */
+        .form-input {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            outline: none;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        
+        .form-input:focus {
+            border-color: #6366f1;
+            background-color: #fff;
+            /* Corrected 'ring' property to standard CSS box-shadow */
+            box-shadow: 0 0 0 3px #e0e7ff; 
+        }
+
+        /* Custom Scrollbar for Roster */
+        #roster-list::-webkit-scrollbar { width: 4px; }
+        #roster-list::-webkit-scrollbar-track { background: #f1f1f1; }
+        #roster-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="p-2 md:p-8">
+
+    <!-- GLOBAL HEADER -->
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+        <div class="flex items-center space-x-4 w-full sm:w-auto">
+            <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 font-bold shrink-0">SMS</div>
+            <div>
+                <h1 class="font-bold text-gray-800 text-sm md:text-base">Student Attendance System</h1>
+                <p class="text-[10px] md:text-xs text-gray-400">Real-time presence</p>
+            </div>
+        </div>
+        <div class="flex space-x-2 w-full sm:w-auto justify-center">
+            <div class="bg-green-50 px-3 py-1 rounded-lg text-center min-w-[70px]">
+                <p id="stat-present" class="text-green-600 font-bold text-lg leading-none">0</p>
+                <p class="text-[9px] text-green-500 uppercase font-bold tracking-tighter">Present</p>
+            </div>
+            <div class="bg-yellow-50 px-3 py-1 rounded-lg text-center min-w-[70px]">
+                <p id="stat-late" class="text-yellow-600 font-bold text-lg leading-none">0</p>
+                <p class="text-[9px] text-yellow-500 uppercase font-bold tracking-tighter">Late</p>
+            </div>
+            <div class="bg-red-50 px-3 py-1 rounded-lg text-center min-w-[70px]">
+                <p id="stat-absent" class="text-red-600 font-bold text-lg leading-none">0</p>
+                <p class="text-[9px] text-red-500 uppercase font-bold tracking-tighter">Absent</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN NAVIGATION -->
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-1.5 flex mb-4 gap-1">
+        <button onclick="switchView('dashboard')" id="btn-dashboard" class="nav-btn flex-1 py-3 text-xs md:text-sm font-semibold rounded-xl text-gray-500 hover:bg-gray-50 transition active">Dashboard</button>
+        <button onclick="switchView('scan')" id="btn-scan" class="nav-btn flex-1 py-3 text-xs md:text-sm font-semibold rounded-xl text-gray-500 hover:bg-gray-50 transition">Scan</button>
+        <button onclick="switchView('alerts')" id="btn-alerts" class="nav-btn flex-1 py-3 text-xs md:text-sm font-semibold rounded-xl text-gray-500 hover:bg-gray-50 transition">Alerts</button>
+    </div>
+
+    <!-- VIEW: DASHBOARD -->
+    <section id="view-dashboard" class="view-section active max-w-4xl mx-auto">
+        
+        <!-- ADD NEW STUDENT FORM: FULLY RESPONSIVE -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6 mb-4">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                </div>
+                <h3 class="font-bold text-sm text-gray-700">Add New Student</h3>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-end">
+                <div class="md:col-span-4">
+                    <input type="text" id="new-name" placeholder="Full Name" class="form-input">
+                </div>
+                <div class="md:col-span-4">
+                    <input type="text" id="new-id" placeholder="Student ID (e.g. 00006031)" class="form-input">
+                </div>
+                <div class="md:col-span-3">
+                    <input type="text" id="new-section" placeholder="Section" class="form-input">
+                </div>
+                <div class="md:col-span-1">
+                    <button onclick="addNewStudent()" class="w-full bg-indigo-600 text-white h-[46px] rounded-xl font-bold text-sm hover:bg-indigo-700 transition shadow-lg shadow-indigo-100">Add</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STUDENT LIST CONTAINER -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-4 border-b flex justify-between items-center bg-white">
+                <h3 class="font-bold text-[10px] uppercase text-gray-400 tracking-widest">Student List</h3>
+                <span id="roster-count" class="text-[10px] font-bold text-gray-400 tracking-widest">0 0 0</span>
+            </div>
+            
+            <div id="roster-list" class="max-h-[500px] overflow-y-auto divide-y divide-gray-50">
+                <!-- Students will be generated here -->
+            </div>
+
+            <div class="p-4 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <span class="text-xs font-bold text-gray-500">Attendance Rate</span>
+                <div class="flex items-center space-x-4 w-full sm:w-auto">
+                    <div class="flex-1 sm:w-48 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div id="rate-bar" class="bg-green-500 h-full transition-all duration-700" style="width: 0%"></div>
+                    </div>
+                    <span id="rate-text" class="text-sm font-bold text-green-600 min-w-[35px]">0%</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VIEW: SCAN (MOBILE FRIENDLY) -->
+    <section id="view-scan" class="view-section max-w-4xl mx-auto text-center">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-16">
+            <div class="relative inline-block mb-6">
+                <div class="w-20 h-20 md:w-28 md:h-28 bg-gradient-to-tr from-indigo-600 to-indigo-400 rounded-full mx-auto shadow-2xl flex items-center justify-center">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                    </svg>
+                </div>
+                <div class="absolute bottom-1 right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800">Scan Student Card</h2>
+            <p class="text-sm text-gray-400 mb-8">Ready to sync with cloud database</p>
+
+            <div class="flex flex-col sm:flex-row max-w-lg mx-auto shadow-sm rounded-2xl overflow-hidden border border-gray-200">
+                <input type="text" id="scan-input" placeholder="Enter Student ID..." class="flex-1 p-4 outline-none text-sm bg-white">
+                <button onclick="handleScan()" class="bg-indigo-600 text-white px-8 py-4 sm:py-0 font-bold hover:bg-indigo-700 transition">Scan Now</button>
+            </div>
+        </div>
+        <div id="scan-result-container" class="mt-4 px-2"></div>
+    </section>
+
+    <!-- VIEW: ALERTS -->
+    <section id="view-alerts" class="view-section max-w-4xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold">Activity Logs</h3>
+                <span id="alert-count" class="bg-indigo-100 text-indigo-600 text-[10px] font-bold px-2.5 py-1 rounded-full">0</span>
+            </div>
+            <div id="alert-list" class="space-y-3"></div>
+        </div>
+    </section>
+
+    <!-- FOOTER STATS -->
+    <div class="mt-12 text-center text-[9px] md:text-[10px] text-gray-400 flex flex-wrap justify-center gap-3 md:gap-6 uppercase font-bold tracking-widest pb-8">
+        <span>V1.1</span> <span>85% SUCCESS</span> <span>RUPP</span> 
+    </div>
+
+    <script>
+        // --- DATA STATE ---
+    
+
+        let students = [
+            { id: '00006001', name: 'Sokha Mean', section: 'M3', status: 'Present' },
+            { id: '00006002', name: 'Sokha Song', section: 'E2', status: 'Present' },
+            { id: '00006003', name: 'Chan Ratanak', section: 'M1', status: 'Absent' },
+            { id: '00006004', name: 'Ly Thida', section: 'E5', status: 'Present' },
+            { id: '00006005', name: 'Nhiek Sopheap', section: 'M9', status: 'Late' },
+            { id: '00006006', name: 'Sun Sovann', section: 'E1', status: 'Present' },
+            { id: '00006007', name: 'Meng Chanty', section: 'M4', status: 'Absent' },
+            { id: '00006008', name: 'Pich Sovannara', section: 'E3', status: 'Late' },
+            { id: '00006009', name: 'Keo Sarath', section: 'M7', status: 'Present' },
+            { id: '00006010', name: 'Vannak Khem', section: 'M2', status: 'Present' },
+            { id: '00006011', name: 'Dara Samith', section: 'E4', status: 'Absent' },
+            { id: '00006012', name: 'Bopha Devi', section: 'M5', status: 'Present' },
+            { id: '00006013', name: 'Chitra Long', section: 'M8', status: 'Late' },
+            { id: '00006014', name: 'Srey Leak', section: 'E2', status: 'Present' },
+            { id: '00006015', name: 'Nita Phalla', section: 'M6', status: 'Present' },
+            { id: '00006016', name: 'Rithy Panh', section: 'E5', status: 'Absent' },
+            { id: '00006017', name: 'Phirun Tep', section: 'M1', status: 'Present' },
+            { id: '00006018', name: 'Vatana Sok', section: 'M3', status: 'Late' },
+            { id: '00006019', name: 'Kunthea Vy', section: 'E1', status: 'Present' },
+            { id: '00006020', name: 'Mony Rath', section: 'M9', status: 'Present' },
+            { id: '00006021', name: 'Serey Vathana', section: 'M4', status: 'Absent' },
+            { id: '00006022', name: 'Tola Heng', section: 'E3', status: 'Present' },
+            { id: '00006023', name: 'Piseth Sam', section: 'M7', status: 'Late' },
+            { id: '00006024', name: 'Kalyan Meas', section: 'M2', status: 'Present' },
+            { id: '00006025', name: 'Raksmey Chea', section: 'E4', status: 'Present' },
+            { id: '00006026', name: 'Sivorn Hun', section: 'M5', status: 'Absent' },
+            { id: '00006027', name: 'Odom Chhay', section: 'M8', status: 'Present' },
+            { id: '00006028', name: 'Visal Kim', section: 'E2', status: 'Late' },
+            { id: '00006029', name: 'Sophy Seng', section: 'M6', status: 'Present' },
+            { id: '00006030', name: 'Narong Ros', section: 'E1', status: 'Present' }
+        ];
+
+        let alerts = [
+            { message: "Vatana Sok marked LATE at 08:55 AM", time: "2 min ago", type: 'late' },
+            { message: "Dara Samith ABSENT", time: "15 min ago", type: 'absent' }
+        ];
+
+
+        // --- ADD STUDENT LOGIC ---
+        function addNewStudent() {
+            const name = document.getElementById('new-name').value.trim();
+            const id = document.getElementById('new-id').value.trim();
+            const section = document.getElementById('new-section').value.trim();
+
+            if (!name || !id || !section) {
+                alert("Please fill all fields to add a student.");
+                return;
+            }
+
+            if (students.find(s => s.id === id)) {
+                alert("This Student ID already exists.");
+                return;
+            }
+
+            students.unshift({ id, name, section, status: 'Absent' });
+
+            alerts.unshift({
+                message: `New student added: ${name} (${id})`,
+                time: "Just now",
+                type: 'present'
+            });
+
+            document.getElementById('new-name').value = '';
+            document.getElementById('new-id').value = '';
+            document.getElementById('new-section').value = '';
+
+            updateUI();
+        }
+
+        // --- UI NAVIGATION ---
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`view-${viewId}`).classList.add('active');
+            document.getElementById(`btn-${viewId}`).classList.add('active');
+            updateUI();
+        }
+
+        function updateStatus(studentId) {
+            const student = students.find(s => s.id === studentId);
+            const cycle = { 'Present': 'Late', 'Late': 'Absent', 'Absent': 'Present' };
+            student.status = cycle[student.status];
+            
+            alerts.unshift({
+                message: `${student.name} updated to ${student.status}`,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                type: student.status.toLowerCase()
+            });
+            updateUI();
+        }
+
+        function handleScan() {
+            const val = document.getElementById('scan-input').value;
+            const target = students.find(s => s.id === val);
+            const container = document.getElementById('scan-result-container');
+            
+            if (target) {
+                container.innerHTML = `
+                    <div class="max-w-xl mx-auto bg-white rounded-2xl shadow-xl border-l-8 border-indigo-500 p-6 flex flex-col items-start animate-pulse">
+                        <h3 class="text-xl font-bold">${target.name}</h3>
+                        <p class="text-xs text-gray-400 mb-4 uppercase font-bold">${target.id} • ${target.section}</p>
+                        <div class="flex w-full space-x-2">
+                            <button onclick="quickUpdate('${target.id}', 'Present')" class="flex-1 bg-green-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-100">Present</button>
+                            <button onclick="quickUpdate('${target.id}', 'Late')" class="flex-1 bg-yellow-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-yellow-100">Late</button>
+                        </div>
+                    </div>`;
+            } else {
+                container.innerHTML = `<div class="text-red-500 font-bold p-4 bg-red-50 rounded-xl max-w-xl mx-auto">Student ID not found in database.</div>`;
+            }
+        }
+
+        function quickUpdate(id, status) {
+            const student = students.find(s => s.id === id);
+            student.status = status;
+            document.getElementById('scan-result-container').innerHTML = `
+                <div class="bg-green-500 text-white p-6 rounded-2xl max-w-xl mx-auto font-bold shadow-xl">
+                    ✅ Attendance Saved: ${student.name}
+                </div>`;
+            setTimeout(() => {
+                document.getElementById('scan-input').value = '';
+                switchView('dashboard');
+            }, 1200);
+            updateUI();
+        }
+
+        // --- RENDER ENGINE ---
+        function updateUI() {
+            const present = students.filter(s => s.status === 'Present').length;
+            const late = students.filter(s => s.status === 'Late').length;
+            const absent = students.filter(s => s.status === 'Absent').length;
+            
+            document.getElementById('stat-present').innerText = present;
+            document.getElementById('stat-late').innerText = late;
+            document.getElementById('stat-absent').innerText = absent;
+            document.getElementById('roster-count').innerText = `${present} ${late} ${absent}`;
+
+            const rate = students.length > 0 ? Math.round((present / students.length) * 100) : 0;
+            document.getElementById('rate-bar').style.width = `${rate}%`;
+            document.getElementById('rate-text').innerText = `${rate}%`;
+
+            renderRoster();
+            renderAlerts();
+        }
+
+        function renderRoster() {
+            const list = document.getElementById('roster-list');
+            list.innerHTML = students.map(s => `
+                <div class="flex items-center justify-between p-4 hover:bg-slate-50/50 transition-colors">
+                    <div class="flex items-center space-x-3 md:space-x-4">
+                        <div class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-xs shrink-0">
+                            ${s.name.charAt(0)}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-sm text-gray-800 truncate">${s.name}</p>
+                            <p class="text-[10px] text-gray-400 uppercase font-bold truncate">${s.id} • ${s.section}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 md:space-x-4">
+                        <span class="text-[9px] md:text-[10px] font-bold px-2.5 py-1 rounded-lg ${getStatusStyle(s.status)}">${s.status}</span>
+                        <button onclick="updateStatus('${s.id}')" class="text-[10px] font-bold text-gray-400 border border-gray-100 px-3 py-1.5 rounded-lg hover:bg-white hover:shadow-sm transition active:scale-95">Update</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderAlerts() {
+            document.getElementById('alert-count').innerText = alerts.length;
+            document.getElementById('alert-list').innerHTML = alerts.map(a => `
+                <div class="p-3 bg-gray-50 rounded-xl border-l-4 ${getAlertBorder(a.type)}">
+                    <p class="text-xs font-bold text-gray-700">${a.message}</p>
+                    <p class="text-[10px] text-gray-400 mt-1">${a.time}</p>
+                </div>
+            `).join('');
+        }
+
+        function getStatusStyle(status) {
+            if (status === 'Present') return 'bg-green-100 text-green-600';
+            if (status === 'Late') return 'bg-yellow-100 text-yellow-600';
+            return 'bg-red-100 text-red-600';
+        }
+
+        function getAlertBorder(type) {
+            if (type === 'present') return 'border-green-400';
+            if (type === 'late') return 'border-yellow-400';
+            return 'border-red-400';
+        }
+
+        // Initialize UI
+        updateUI();
+    </script>
+</body>
+</html>
