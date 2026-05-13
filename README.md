@@ -1,6 +1,6 @@
 # 🎓 Student Management System (Frontend)
 
-A modern **Student Management System UI** built with **React (Vite)**.  
+A modern **Student Management System UI** .  
 This project focuses on clean design and smooth user experience for managing students and courses.
 
 ---
